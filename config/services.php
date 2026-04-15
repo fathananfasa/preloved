@@ -40,4 +40,8 @@ return [
         'url' => env('RAJAONGKIR_BASE_URL'),
     ],
 
+    'binderbyte' => [
+        'key' => env('BINDERBYTE_API_KEY')
+    ],
+
 ];

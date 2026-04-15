@@ -26,6 +26,16 @@
             </div>
 
             <div>
+                <label>Berat Produk (gram)</label>
+                <input type="number"
+                    name="weight"
+                    value="{{ old('weight', $product->weight) }}"
+                    min="1"
+                    class="w-full border rounded p-2">
+                <p class="text-sm text-gray-500 mt-1">Contoh: 500 = 0.5 kg</p>
+            </div>
+
+            <div>
                 <label>Kategori</label>
                 <select name="category_id" class="w-full border rounded p-2">
                     @foreach ($categories as $category)

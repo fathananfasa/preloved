@@ -14,6 +14,7 @@ class Transaction extends Model
         'product_id',
         'buyer_id',
         'total',
+        'qty',
         'status',
         'snap_token',
         'expired_at',

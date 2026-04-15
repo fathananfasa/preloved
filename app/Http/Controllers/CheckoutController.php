@@ -10,6 +10,8 @@ use App\Models\Product;
 use App\Models\Cart;
 use Midtrans\Config;
 use Midtrans\Snap;
+use Illuminate\Support\Str;
+
 
 class CheckoutController extends Controller
 {
@@ -119,14 +121,14 @@ class CheckoutController extends Controller
 
                     $total = $negotiation->offer_price + $request->shipping_cost;
                     $productId = $product->id;
+                    $qty = 1; // 🔥 wajib
                 }
 
                 /*
                 |--------------------------------------------------------------------------
                 | CART
                 |--------------------------------------------------------------------------
-                */
-                elseif ($request->cart_ids) {
+                */ elseif ($request->cart_ids) {
 
                     $carts = Cart::with('product')
                         ->whereIn('id', $request->cart_ids)
@@ -146,9 +148,7 @@ class CheckoutController extends Controller
                     foreach ($carts as $cart) {
                         $cart->delete();
                     }
-                }
-
-                else {
+                } else {
                     throw new \Exception("Request tidak valid");
                 }
 
@@ -161,10 +161,12 @@ class CheckoutController extends Controller
                 $transaction = Transaction::create([
                     'buyer_id'        => auth()->id(),
                     'product_id'      => $productId,
+                    'qty'             => $qty, // 🔥 INI YANG FIX ERROR
+
                     'total'           => $total,
                     'receiver_name'   => $address->receiver_name,
                     'phone'           => $address->phone,
-                    'shipping_address'=> $address->address,
+                    'shipping_address' => $address->address,
                     'c_name'          => $address->c_name,
                     'p_name'          => $address->p_name,
                     'k_name'          => $address->k_name,
@@ -173,8 +175,7 @@ class CheckoutController extends Controller
                     'expired_at'      => now()->addHours(24),
                 ]);
 
-                $orderId = 'TRX-' . $transaction->id;
-
+                $orderId = 'TRX-' . $transaction->id . '-' . Str::random(5);
                 /*
                 |--------------------------------------------------------------------------
                 | GENERATE SNAP TOKEN
@@ -202,13 +203,12 @@ class CheckoutController extends Controller
                     'snap_token' => $snapToken
                 ]);
             });
-
         } catch (\Exception $e) {
 
             \Log::error($e->getMessage());
 
             return response()->json([
-                'error' => 'Gagal membuat pembayaran'
+                'error' => $e->getMessage() // 🔥 tampilkan error asli
             ], 500);
         }
     }

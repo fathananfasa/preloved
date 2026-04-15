@@ -213,7 +213,8 @@
                             },
                             body: JSON.stringify({
                                 destination: districtId,
-                                weight: 1000,
+                                product_id: "{{ $type === 'single' ? $product->id : '' }}",
+
                                 courier: this.value
                             })
                         })
@@ -242,6 +243,19 @@
 
                                 serviceSelect.appendChild(option);
                             });
+                            let cheapest = data[0];
+
+                            data.forEach(item => {
+                                if (item.cost < cheapest.cost) {
+                                    cheapest = item;
+                                }
+                            });
+
+                            // set ke select
+                            serviceSelect.value = cheapest.service;
+
+                            // trigger hitung total
+                            serviceSelect.dispatchEvent(new Event('change'));
 
                         });
                 });
@@ -278,6 +292,7 @@
                     })
                     .then(res => res.json())
                     .then(response => {
+                            console.log(response); // 🔥 lihat ini
 
                         if (!response.snap_token) {
                             alert("Gagal mendapatkan Snap Token");

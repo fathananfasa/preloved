@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
+use App\Models\Product;
 use Illuminate\Support\Facades\Http;
 
 class RajaOngkirController extends Controller
@@ -47,14 +47,18 @@ class RajaOngkirController extends Controller
 
     public function cost(Request $request)
     {
+        $product = Product::findOrFail($request->product_id);
+
+        $weight = max($product->weight, 1);
+
         $response = Http::asForm()->withHeaders([
             'Accept' => 'application/json',
             'key' => $this->apiKey
         ])->post('https://rajaongkir.komerce.id/api/v1/calculate/district/domestic-cost', [
             'origin'      => 1402,
-            'destination' => $request->input('destination'),
-            'weight'      => max($request->weight, 1),
-            'courier'     => $request->input('courier'),
+            'destination' => $request->destination,
+            'weight'      => $weight,
+            'courier'     => $request->courier,
         ]);
 
         if ($response->successful()) {

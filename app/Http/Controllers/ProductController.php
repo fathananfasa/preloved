@@ -72,12 +72,14 @@ class ProductController extends Controller
         }
 
         $product = Product::create([
-            'name' => $validated['name'],
-            'category_id' => $categoryId,
-            'price_original' => $validated['price_original'],
-            'stock' => $validated['stock'],
-            'description' => $validated['description'] ?? null,
+            'name' => $request->name,
+            'price_original' => $request->price_original,
+            'stock' => $request->stock,
+            'weight' => $request->weight,
+            'category_id' => $request->category_id,
+            'description' => $request->description,
         ]);
+
 
         // Upload images
         if ($request->hasFile('images')) {

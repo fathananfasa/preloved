@@ -41,6 +41,10 @@
                     <x-nav-link :href="route('admin.negotiations.index')" :active="request()->routeIs('admin.negotiations.*')">
                         Negosiasi
                     </x-nav-link>
+
+                    <x-nav-link :href="route('admin.order')" :active="request()->routeIs('admin.order')">
+                        Orderan
+                    </x-nav-link>                    
                 </div>
                 @endif
                 @endauth
@@ -130,6 +134,10 @@
                         @if(auth()->user()->role === 'buyer')
                         <x-dropdown-link :href="route('buyer.addresses.index')">
                             Alamat
+                        </x-dropdown-link>
+
+                         <x-dropdown-link :href="route('buyer.tracking.index')">
+                            Riwayat Pesanan
                         </x-dropdown-link>
                         @endif
 
@@ -238,7 +246,9 @@
             <div class="mt-2 border-t pt-2">
                 <x-responsive-nav-link :href="route('profile.edit')">Profile</x-responsive-nav-link>
                 @if(auth()->user()->role === 'buyer')
-                <x-responsive-nav-link :href="route('buyer.addresses.index')">Alamat</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('buyer.addresses.index')">
+                    Alamat
+                </x-responsive-nav-link>
                 @endif
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf

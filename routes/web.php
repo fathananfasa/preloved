@@ -2,13 +2,16 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminNegotiationController;
+use App\Http\Controllers\AdminOrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductPublicController;
 use App\Http\Controllers\BuyerController;
 use App\Http\Controllers\NegotiationController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\AddressController;
+use App\Http\Controllers\TrackingController;
 use App\Http\Controllers\RajaOngkirController;
 use Illuminate\Support\Facades\Route;
 
@@ -69,6 +72,9 @@ Route::middleware(['auth', 'role:admin'])
             '/negotiations/{negotiation}/reject',
             [AdminNegotiationController::class, 'reject']
         )->name('negotiations.reject');
+
+        Route::get('/order', [AdminOrderController::class, 'index'])->name('order');
+        Route::put('/order/resi/{id}', [AdminOrderController::class, 'updateResi'])->name('update.resi');
     });
 
 
@@ -101,10 +107,10 @@ Route::middleware(['auth', 'role:buyer'])
 
 
         Route::get('/products/{product}', [ProductPublicController::class, 'show'])
-                ->name('products.show');
+            ->name('products.show');
 
         //Route::get('/products/{product}', [ProductPublicController::class, 'index'])
-                //->name('products.index');
+        //->name('products.index');
 
         Route::post('/negotiations/{product}', [NegotiationController::class, 'store'])
             ->name('negotiations.store');
@@ -136,6 +142,9 @@ Route::middleware(['auth', 'role:buyer'])
         Route::post('/order/{product}', [CheckoutController::class, 'store'])
             ->name('order.store');
 
+        Route::get('/order', [OrderController::class, 'index'])
+            ->name('order.index');
+
         Route::get('/notification/{id}', function ($id) {
 
             $notification = auth()->user()
@@ -151,6 +160,9 @@ Route::middleware(['auth', 'role:buyer'])
                 $notification->data['product_id']
             );
         })->name('notification.redirect');
+
+      Route::get('/order', [TrackingController::class, 'index'])
+    ->name('tracking.index');
     });
 
 

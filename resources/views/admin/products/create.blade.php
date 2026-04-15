@@ -38,6 +38,19 @@
                     required>
             </div>
 
+            <!-- Weight -->
+            <div>
+                <label class="block font-medium text-gray-700 mb-1">Berat Produk (gram)</label>
+                <input type="number"
+                    name="weight"
+                    value="{{ old('weight') }}"
+                    min="1"
+                    placeholder="Contoh: 500"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                    required>
+                <p class="text-sm text-gray-500 mt-1">Masukkan berat dalam gram. Contoh: 500 = 0.5 kg</p>
+            </div>
+
             <!-- Kategori -->
             <div>
                 <label class="block font-medium text-gray-700 mb-1">Kategori</label>

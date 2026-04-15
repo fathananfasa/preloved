@@ -21,6 +21,7 @@ return new class extends Migration
             $table->id();
             $table->string('name', 150);
             $table->text('description')->nullable();
+            $table->unsignedInteger('weight')->nullable();
             $table->unsignedInteger('price_original');
             $table->unsignedInteger('stock')->default(0);
             $table->enum('status', [
@@ -77,7 +78,13 @@ return new class extends Migration
             $table->string('k_name')->nullable();
             $table->string('postal_code', 10)->nullable();
             $table->string('courier', 5)->nullable();
-            $table->string('tracking_number')->nullable();
+            $table->string('resi')->nullable();
+            $table->enum('shipping_status',[
+            'dikemas',
+            'dikirim',
+            'selesai'
+            ])->default('dikemas');
+            $table->integer('qty');
             $table->timestamps();
         });
 
