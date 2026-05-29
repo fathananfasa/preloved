@@ -13,9 +13,14 @@ class Negotiation extends Model
 
     protected $fillable = [
         'product_id',
-        'buyer_id',
+        'user_id',
         'offer_price',
         'status',
+        'attempt_count',
+        'is_blocked',
+        'counter_price',
+        'ai_message',
+        'final_price',
     ];
 
     public function product()
@@ -23,9 +28,9 @@ class Negotiation extends Model
         return $this->belongsTo(Product::class);
     }
 
-    public function buyer()
+    public function user()
     {
-        return $this->belongsTo(User::class, 'buyer_id');
+        return $this->belongsTo(User::class);
     }
 }
 

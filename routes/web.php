@@ -9,10 +9,11 @@ use App\Http\Controllers\BuyerController;
 use App\Http\Controllers\NegotiationController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\CartController;
-use App\Http\Controllers\OrderController;
 use App\Http\Controllers\AddressController;
+use App\Http\Controllers\PenggunaController;
 use App\Http\Controllers\TrackingController;
 use App\Http\Controllers\RajaOngkirController;
+use App\Http\Controllers\TestimonialController;
 use Illuminate\Support\Facades\Route;
 
 // ==================== PUBLIC / GUEST ====================
@@ -75,6 +76,11 @@ Route::middleware(['auth', 'role:admin'])
 
         Route::get('/order', [AdminOrderController::class, 'index'])->name('order');
         Route::put('/order/resi/{id}', [AdminOrderController::class, 'updateResi'])->name('update.resi');
+        Route::get('/order/export', [AdminOrderController::class, 'export'])->name('export');
+
+        Route::get('/pengguna', [PenggunaController::class, 'index'])->name('pengguna');
+        Route::delete('/pengguna/{id}', [PenggunaController::class, 'destroy'])
+    ->name('pengguna.delete');
     });
 
 
@@ -118,6 +124,9 @@ Route::middleware(['auth', 'role:buyer'])
         Route::put('/negotiations/{negotiation}', [NegotiationController::class, 'update'])
             ->name('negotiations.update');
 
+        Route::post('/negotiations/{negotiation}/accept-ai', [NegotiationController::class, 'acceptAi'])
+            ->name('negotiations.accept.ai');
+
         Route::get('/checkout/cart', [CheckoutController::class, 'checkoutCart'])
             ->name('checkout.cart');
 
@@ -142,9 +151,6 @@ Route::middleware(['auth', 'role:buyer'])
         Route::post('/order/{product}', [CheckoutController::class, 'store'])
             ->name('order.store');
 
-        Route::get('/order', [OrderController::class, 'index'])
-            ->name('order.index');
-
         Route::get('/notification/{id}', function ($id) {
 
             $notification = auth()->user()
@@ -161,8 +167,11 @@ Route::middleware(['auth', 'role:buyer'])
             );
         })->name('notification.redirect');
 
-      Route::get('/order', [TrackingController::class, 'index'])
-    ->name('tracking.index');
+        Route::get('/order', [TrackingController::class, 'index'])
+            ->name('tracking.index');
+
+        Route::post('/testimonial', [TestimonialController::class, 'store'])
+            ->name('testimonial.store');
     });
 
 

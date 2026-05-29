@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Product;
+use App\Models\Cart;
 use Illuminate\Support\Facades\Http;
 
 class RajaOngkirController extends Controller
@@ -17,54 +18,108 @@ class RajaOngkirController extends Controller
 
     public function provinces()
     {
-        $response = Http::withHeaders(['key' => $this->apiKey])
-            ->get('https://rajaongkir.komerce.id/api/v1/destination/province');
+        $response = Http::withHeaders([
+            'key' => $this->apiKey
+        ])->get(
+            'https://rajaongkir.komerce.id/api/v1/destination/province'
+        );
 
-        $data = $response->json();
-
-        return response()->json($data['data'] ?? []);
+        return response()->json(
+            $response->json()['data'] ?? []
+        );
     }
 
     public function cities($province_id)
     {
-        $response = Http::withHeaders(['key' => $this->apiKey])
-            ->get("https://rajaongkir.komerce.id/api/v1/destination/city/{$province_id}");
+        $response = Http::withHeaders([
+            'key' => $this->apiKey
+        ])->get(
+            "https://rajaongkir.komerce.id/api/v1/destination/city/$province_id"
+        );
 
-        $data = $response->json();
-
-        return response()->json($data['data'] ?? []);
+        return response()->json(
+            $response->json()['data'] ?? []
+        );
     }
 
     public function districts($city_id)
     {
-        $response = Http::withHeaders(['key' => $this->apiKey])
-            ->get("https://rajaongkir.komerce.id/api/v1/destination/district/{$city_id}");
+        $response = Http::withHeaders([
+            'key' => $this->apiKey
+        ])->get(
+            "https://rajaongkir.komerce.id/api/v1/destination/district/$city_id"
+        );
 
-        $data = $response->json();
-
-        return response()->json($data['data'] ?? []);
+        return response()->json(
+            $response->json()['data'] ?? []
+        );
     }
 
     public function cost(Request $request)
     {
-        $product = Product::findOrFail($request->product_id);
+        $weight = 0;
 
-        $weight = max($product->weight, 1);
+        /*
+        |----------------------------------
+        | SINGLE PRODUCT
+        |----------------------------------
+        */
 
-        $response = Http::asForm()->withHeaders([
-            'Accept' => 'application/json',
-            'key' => $this->apiKey
-        ])->post('https://rajaongkir.komerce.id/api/v1/calculate/district/domestic-cost', [
-            'origin'      => 1402,
-            'destination' => $request->destination,
-            'weight'      => $weight,
-            'courier'     => $request->courier,
-        ]);
+        if ($request->product_id) {
 
-        if ($response->successful()) {
-            return $response->json()['data'] ?? [];
+            $product = Product::findOrFail(
+                $request->product_id
+            );
+
+            $weight = $product->weight;
         }
 
-        return response()->json($response->json());
+        /*
+        |----------------------------------
+        | CART
+        |----------------------------------
+        */
+
+        elseif ($request->cart_ids) {
+
+            $carts = Cart::with('product')
+                ->whereIn(
+                    'id',
+                    $request->cart_ids
+                )
+                ->where(
+                    'user_id',
+                    auth()->id()
+                )
+                ->get();
+
+            foreach ($carts as $cart) {
+
+                $weight +=
+                    ($cart->product->weight ?? 0)
+                    * $cart->quantity;
+            }
+        }
+
+        $weight = max($weight,1);
+
+        $response = Http::asForm()
+            ->withHeaders([
+                'Accept'=>'application/json',
+                'key'=>$this->apiKey
+            ])
+            ->post(
+                'https://rajaongkir.komerce.id/api/v1/calculate/district/domestic-cost',
+                [
+                    'origin'=>1402,
+                    'destination'=>$request->destination,
+                    'weight'=>$weight,
+                    'courier'=>$request->courier,
+                ]
+            );
+
+        return response()->json(
+            $response->json()['data'] ?? []
+        );
     }
 }

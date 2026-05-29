@@ -3,31 +3,48 @@
 namespace App\Http\Controllers;
 
 use App\Models\Transaction;
-
-
-
 use Illuminate\Http\Request;
+use App\Exports\TransactionsExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AdminOrderController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $transactions = Transaction::latest()->get(); // ambil semua data
+        $transactions = Transaction::with('user')
+            ->filter($request)
+            ->latest()
+            ->get();
 
-        return view('admin.order', compact('transactions'));
+        return view(
+            'admin.order',
+            compact('transactions')
+        );
     }
 
     public function updateResi(Request $request, $id)
-{
-    $request->validate([
-        'resi' => 'required|string'
-    ]);
+    {
+        $request->validate([
+            'resi' => 'required|string'
+        ]);
 
-    $trx = Transaction::findOrFail($id);
-    $trx->resi = $request->resi;
+        $trx = Transaction::findOrFail($id);
 
-    $trx->save();
+        $trx->resi = $request->resi;
+        $trx->save();
 
-    return redirect()->back()->with('success', 'Resi berhasil diupdate');
-}
+        return back()->with(
+            'success',
+            'Resi berhasil diupdate'
+        );
+    }
+
+    public function export(Request $request)
+    {
+        return Excel::download(
+            new TransactionsExport($request),
+            'transactions.xlsx',
+            \Maatwebsite\Excel\Excel::XLSX
+        );
+    }
 }

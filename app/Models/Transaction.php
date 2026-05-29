@@ -11,36 +11,75 @@ class Transaction extends Model
     use HasFactory;
 
     protected $fillable = [
-        'product_id',
-        'buyer_id',
+        'user_id',
         'total',
-        'qty',
         'status',
         'snap_token',
         'expired_at',
         'receiver_name',
         'phone',
         'shipping_address',
+        'shipping_status',
         'c_name',
         'p_name',
         'k_name',
         'postal_code',
-        'courier',	
+        'courier',
         'tracking_number',
+        'last_tracking',
+        'tracking_history',
+        'resi',
     ];
 
     protected $casts = [
         'expired_at' => 'datetime',
+        'last_tracking' => 'array',
+        'tracking_history' => 'array',
     ];
 
-    public function product()
+    public function scopeFilter($query, $request)
     {
-        return $this->belongsTo(Product::class);
+        if ($request->filled('shipping_status')) {
+            $query->where(
+                'shipping_status',
+                $request->shipping_status
+            );
+        }
+
+        if ($request->filled('tanggal')) {
+            $query->whereDate(
+                'created_at',
+                $request->tanggal
+            );
+        }
+
+        if ($request->filled('bulan')) {
+            $query->whereMonth(
+                'created_at',
+                $request->bulan
+            );
+        }
+
+        if ($request->filled('tahun')) {
+            $query->whereYear(
+                'created_at',
+                $request->tahun
+            );
+        }
+
+        return $query;
     }
 
-    public function buyer()
+    public function items()
     {
-        return $this->belongsTo(User::class, 'buyer_id');
+        return $this->hasMany(
+            TransactionItem::class
+        );
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function address()

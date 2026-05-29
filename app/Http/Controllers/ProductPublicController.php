@@ -14,7 +14,7 @@ class ProductPublicController extends Controller
 
     if (auth()->check() && auth()->user()->role === 'buyer') {
         $myNegotiation = Negotiation::where('product_id', $product->id)
-            ->where('buyer_id', auth()->id())
+            ->where('user_id', auth()->id())
             ->latest()
             ->first();
     }

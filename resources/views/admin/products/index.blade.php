@@ -1,446 +1,150 @@
 <x-app-layout>
 
-    <div class="p-4 md:p-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
 
-        {{-- =========================
-FILTER & SEARCH
-========================= --}}
+        <!-- Header -->
+        <div class="flex items-end justify-between pb-5 border-b border-stone-200">
+            <div>
+                <span class="text-[10px] uppercase tracking-widest text-stone-400 font-medium">Admin</span>
+                <h1 class="font-serif text-2xl sm:text-3xl font-bold text-stone-900 mt-1">Produk</h1>
+            </div>
+            <button
+                onclick="openProductModal()"
+                class="bg-stone-900 hover:bg-stone-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold tracking-wide transition duration-200 shadow hover:shadow-md">
+                + Tambah Produk
+            </button>
+        </div>
 
-        <div class="mb-4 flex flex-col md:flex-row md:items-center md:gap-4 gap-2">
+        <!-- Filter & Search -->
+        <form method="GET" class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
 
-            <form method="GET" class="flex flex-col sm:flex-row sm:items-center gap-2">
-
+            <div class="relative flex-1 sm:max-w-xs">
+                <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none"
+                    fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+                </svg>
                 <input
                     type="text"
                     name="search"
                     value="{{ request('search') }}"
                     placeholder="Cari nama produk..."
-                    class="border rounded px-3 py-2 text-sm w-full sm:w-60 focus:ring-1 focus:ring-blue-400">
+                    class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-stone-200 bg-white text-sm text-stone-800 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition">
+            </div>
 
-                <select
-                    name="category_id"
-                    class="border rounded px-3 py-2 text-sm w-full sm:w-48 focus:ring-1 focus:ring-blue-400">
-
-                    <option value="">Semua Kategori</option>
-
-                    @foreach ($categories as $category)
-                    <option
-                        value="{{ $category->id }}"
-                        {{ request('category_id') == $category->id ? 'selected' : '' }}>
-                        {{ $category->name }}
-                    </option>
-                    @endforeach
-
-                </select>
-
-                <button
-                    class="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">
-                    Cari
-                </button>
-
-                <a
-                    href="{{ route('admin.products.index') }}"
-                    class="px-4 py-2 bg-red-500 text-white rounded text-sm hover:bg-red-600 text-center">
-                    Reset
-                </a>
-
-            </form>
+            <select
+                name="category_id"
+                class="sm:w-48 px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition">
+                <option value="">Semua Kategori</option>
+                @foreach ($categories as $category)
+                <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>
+                    {{ $category->name }}
+                </option>
+                @endforeach
+            </select>
 
             <button
-                onclick="openProductModal()"
-                class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-                Tambah Produk
+                class="px-5 py-2.5 bg-stone-900 hover:bg-stone-700 text-white rounded-xl text-sm font-semibold transition duration-200 shadow hover:shadow-md">
+                Cari
             </button>
 
-        </div>
+            <a href="{{ route('admin.products.index') }}"
+                class="px-5 py-2.5 border bg-red-500 border-stone-200 hover:border-stone-400 text-black hover:text-stone-900 rounded-xl text-sm font-semibold transition duration-200 text-center">
+                Reset
+            </a>
 
-        {{-- =========================
-TABLE
-========================= --}}
+        </form>
 
-        <div class="overflow-x-auto border rounded-lg shadow-sm">
+        <!-- Table -->
+        <div class="bg-white rounded-2xl border border-stone-100 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-stone-100 text-sm">
 
-            <table class="min-w-full divide-y divide-gray-200 text-sm">
+                    <thead>
+                        <tr class="bg-stone-50">
+                            <th class="px-4 py-3.5 text-left text-[10px] uppercase tracking-widest text-stone-400 font-medium">Nama</th>
+                            <th class="px-4 py-3.5 text-left text-[10px] uppercase tracking-widest text-stone-400 font-medium">Harga</th>
+                            <th class="px-4 py-3.5 text-left text-[10px] uppercase tracking-widest text-stone-400 font-medium">Stok</th>
+                            <th class="px-4 py-3.5 text-left text-[10px] uppercase tracking-widest text-stone-400 font-medium">Status</th>
+                            <th class="px-4 py-3.5 text-left text-[10px] uppercase tracking-widest text-stone-400 font-medium">Kategori</th>
+                            <th class="px-4 py-3.5 text-left text-[10px] uppercase tracking-widest text-stone-400 font-medium">Gambar</th>
+                            <th class="px-4 py-3.5 text-left text-[10px] uppercase tracking-widest text-stone-400 font-medium">Aksi</th>
+                        </tr>
+                    </thead>
 
-                <thead class="bg-gray-50 text-gray-700 uppercase text-xs">
+                    <tbody class="divide-y divide-stone-50">
+                        @foreach ($products as $product)
+                        <tr class="hover:bg-stone-50 transition duration-150">
 
-                    <tr>
-                        <th class="px-4 py-3 text-left">Nama</th>
-                        <th class="px-4 py-3 text-left">Harga</th>
-                        <th class="px-4 py-3 text-left">Stok</th>
-                        <th class="px-4 py-3 text-left">Status</th>
-                        <th class="px-4 py-3 text-left">Kategori</th>
-                        <th class="px-4 py-3 text-left">Aksi</th>
-                        <th class="px-4 py-3 text-left">Gambar</th>
-                    </tr>
+                            <td class="px-4 py-3.5 font-medium text-stone-900">
+                                {{ $product->name }}
+                            </td>
 
-                </thead>
+                            <td class="px-4 py-3.5 font-serif font-bold text-amber-700">
+                                Rp {{ number_format($product->price_original) }}
+                            </td>
 
-                <tbody class="bg-white divide-y">
+                            <td class="px-4 py-3.5 text-stone-600">
+                                {{ $product->stock }}
+                            </td>
 
-                    @foreach ($products as $product)
-
-                    <tr class="hover:bg-gray-50">
-
-                        <td class="px-4 py-3 font-medium">
-                            {{ $product->name }}
-                        </td>
-
-                        <td class="px-4 py-3">
-                            Rp {{ number_format($product->price_original) }}
-                        </td>
-
-                        <td class="px-4 py-3">
-                            {{ $product->stock }}
-                        </td>
-
-                        <td class="px-4 py-3">
-
-                            <span class="px-2 py-1 rounded-full text-xs font-semibold
-{{ $product->status === 'active'
-? 'bg-green-100 text-green-800'
-: 'bg-gray-200 text-gray-700' }}">
-
-                                {{ ucfirst($product->status) }}
-
-                            </span>
-
-                        </td>
-
-                        <td class="px-4 py-3">
-                            {{ $product->category->name ?? '-' }}
-                        </td>
-
-                        <td class="px-4 py-3 flex gap-2">
-
-                            <a
-                                href="{{ route('admin.products.edit',$product) }}"
-                                class="text-blue-600 hover:text-blue-800">
-                                Edit
-                            </a>
-
-                            <form
-                                action="{{ route('admin.products.destroy',$product) }}"
-                                method="POST"
-                                onsubmit="return confirm('Yakin hapus produk?')">
-
-                                @csrf
-                                @method('DELETE')
-
-                                <button class="text-red-600 hover:text-red-800">
-                                    Hapus
-                                </button>
-
-                            </form>
-
-                        </td>
-
-                        <td class="px-4 py-3">
-
-                            <div class="flex gap-2 flex-wrap">
-
-                                @forelse ($product->images as $image)
-
-                                <img
-                                    src="{{ asset('storage/'.$image->image_path) }}"
-                                    class="w-12 h-12 object-cover rounded border">
-
-                                @empty
-
-                                <span class="text-gray-400 text-xs">
-                                    Tidak ada
+                            <td class="px-4 py-3.5">
+                                <span class="px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wide
+                                    {{ $product->status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-stone-100 text-stone-500' }}">
+                                    {{ ucfirst($product->status) }}
                                 </span>
+                            </td>
 
-                                @endforelse
+                            <td class="px-4 py-3.5 text-stone-500 text-xs">
+                                {{ $product->category->name ?? '-' }}
+                            </td>
 
-                            </div>
+                            <td class="px-4 py-3.5">
+                                <div class="flex gap-1.5 flex-wrap">
+                                    @forelse ($product->images as $image)
+                                    <img
+                                        src="{{ asset('storage/'.$image->image_path) }}"
+                                        class="w-10 h-10 object-cover rounded-lg border border-stone-100">
+                                    @empty
+                                    <span class="text-stone-300 text-xs">—</span>
+                                    @endforelse
+                                </div>
+                            </td>
 
-                        </td>
+                            <td class="px-4 py-3.5">
+                                <div class="flex items-center gap-2">
+                                    <button
+                                        onclick="openEditModal({{ $product }})"
+                                        class="text-xs font-semibold text-stone-600 hover:text-amber-700 border border-stone-200 hover:border-amber-400 px-3 py-1.5 rounded-xl transition duration-200">
+                                        Edit
+                                    </button>
+                                    <form
+                                        action="{{ route('admin.products.destroy', $product) }}"
+                                        method="POST"
+                                        onsubmit="return confirm('Yakin hapus produk?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button
+                                            class="text-xs font-semibold text-red-400 hover:text-red-600 border border-stone-200 hover:border-red-300 px-3 py-1.5 rounded-xl transition duration-200">
+                                            Hapus
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
 
-                    </tr>
+                        </tr>
+                        @endforeach
+                    </tbody>
 
-                    @endforeach
-
-                </tbody>
-
-            </table>
-
+                </table>
+            </div>
         </div>
 
-        <div class="mt-4">
+        <div>
             {{ $products->links() }}
         </div>
 
     </div>
 
-
-    {{-- =========================
-PRODUCT MODAL
-========================= --}}
-
-    <div
-        id="productModal"
-        class="fixed inset-0 hidden items-center justify-center bg-black/40 z-50">
-
-        <div class="bg-white w-full max-w-lg rounded-xl shadow-xl p-6">
-
-            <div class="flex justify-between mb-4">
-
-                <h3 class="font-semibold text-lg">
-                    Tambah Produk
-                </h3>
-
-                <button onclick="closeProductModal()">
-                    ✕
-                </button>
-
-            </div>
-
-            <form
-                id="productForm"
-                action="{{ route('admin.products.store') }}"
-                method="POST"
-                enctype="multipart/form-data"
-                class="space-y-4">
-
-                @csrf
-
-                <input
-                    name="name"
-                    placeholder="Nama produk"
-                    class="w-full border rounded px-3 py-2">
-
-                <div class="grid grid-cols-2 gap-3">
-
-                    <input
-                        type="number"
-                        name="price_original"
-                        placeholder="Harga"
-                        class="border rounded px-3 py-2">
-
-                    <input
-                        type="number"
-                        name="stock"
-                        placeholder="Stok"
-                        class="border rounded px-3 py-2">
-
-                </div>
-
-                <input
-                    type="number"
-                    name="weight"
-                    placeholder="Berat (gram)"
-                    class="w-full border rounded px-3 py-2">
-
-                <select
-                    name="category_id"
-                    class="w-full border rounded px-3 py-2">
-
-                    <option value="">
-                        Pilih kategori
-                    </option>
-
-                    @foreach ($categories as $category)
-
-                    <option value="{{ $category->id }}">
-                        {{ $category->name }}
-                    </option>
-
-                    @endforeach
-
-                </select>
-
-                <textarea
-                    name="description"
-                    rows="3"
-                    placeholder="Deskripsi"
-                    class="w-full border rounded px-3 py-2"></textarea>
-
-
-                {{-- DROP AREA --}}
-
-                <div
-                    id="drop-area"
-                    class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer">
-
-                    <p class="text-sm text-gray-500">
-                        Drag & Drop gambar
-                    </p>
-
-                    <p class="text-xs text-gray-400">
-                        atau klik untuk upload
-                    </p>
-
-                    <input
-                        id="imageInput"
-                        type="file"
-                        name="images[]"
-                        multiple
-                        class="hidden">
-
-                </div>
-
-                <div
-                    id="previewContainer"
-                    class="grid grid-cols-4 gap-2"></div>
-
-
-                <div class="flex justify-end gap-3 pt-3">
-
-                    <button
-                        type="button"
-                        onclick="closeProductModal()"
-                        class="px-4 py-2 border rounded">
-                        Batal
-                    </button>
-
-                    <button
-                        class="px-4 py-2 bg-blue-600 text-white rounded">
-                        Simpan
-                    </button>
-
-                </div>
-
-            </form>
-
-        </div>
-
-    </div>
+    @include('modals.product')
 
 </x-app-layout>
-
-<script>
-    let selectedFiles = []
-
-    const dropArea = document.getElementById("drop-area")
-    const input = document.getElementById("imageInput")
-    const preview = document.getElementById("previewContainer")
-
-    dropArea.onclick = () => input.click()
-
-    input.onchange = function() {
-
-        const files = [...this.files]
-
-        files.forEach(file => {
-
-            if (!file.type.startsWith("image/")) return
-
-            selectedFiles.push(file)
-
-        })
-
-        updateInputFiles()
-
-        renderPreview()
-
-    }
-
-    dropArea.ondragover = e => {
-
-        e.preventDefault()
-        dropArea.classList.add("border-blue-400")
-
-    }
-
-    dropArea.ondragleave = () => {
-
-        dropArea.classList.remove("border-blue-400")
-
-    }
-
-    dropArea.ondrop = e => {
-
-        e.preventDefault()
-
-        const files = [...e.dataTransfer.files]
-
-        files.forEach(file => {
-
-            if (!file.type.startsWith("image/")) return
-
-            selectedFiles.push(file)
-
-        })
-
-        updateInputFiles()
-
-        renderPreview()
-
-        dropArea.classList.remove("border-blue-400")
-
-    }
-
-    function renderPreview() {
-
-        preview.innerHTML = ""
-
-        selectedFiles.forEach((file, index) => {
-
-            const reader = new FileReader()
-
-            reader.onload = e => {
-
-                preview.innerHTML += `
-<div class="relative">
-
-<img src="${e.target.result}"
-class="w-full h-20 object-cover rounded border">
-
-<button
-type="button"
-onclick="removeImage(${index})"
-class="absolute top-1 right-1 bg-red-500 text-white text-xs px-1 rounded">
-✕
-</button>
-
-</div>
-`
-
-            }
-
-            reader.readAsDataURL(file)
-
-        })
-
-    }
-
-    function removeImage(index) {
-
-        selectedFiles.splice(index, 1)
-
-        updateInputFiles()
-
-        renderPreview()
-
-    }
-
-    function updateInputFiles() {
-
-        const dt = new DataTransfer()
-
-        selectedFiles.forEach(f => dt.items.add(f))
-
-        input.files = dt.files
-
-    }
-
-    function openProductModal() {
-
-        document.getElementById("productModal").classList.remove("hidden")
-        document.getElementById("productModal").classList.add("flex")
-
-    }
-
-    function closeProductModal() {
-
-        document.getElementById("productModal").classList.add("hidden")
-        document.getElementById("productModal").classList.remove("flex")
-
-        document.getElementById("productForm").reset()
-
-        selectedFiles = []
-        preview.innerHTML = ""
-
-    }
-</script>

@@ -30,18 +30,22 @@ class User extends Authenticatable
 
     public function negotiations()
     {
-        return $this->hasMany(Negotiation::class, 'buyer_id');
+        return $this->hasMany(Negotiation::class);
     }
 
     public function transactions()
     {
-        return $this->hasMany(Transaction::class, 'buyer_id');
+        return $this->hasMany(Transaction::class);
     }
 
     // User.php
-   public function carts()
-{
-    return $this->hasMany(\App\Models\Cart::class);
-}
+    public function carts()
+    {
+        return $this->hasMany(\App\Models\Cart::class);
+    }
 
+    public function testimonials()
+    {
+        return $this->hasMany(Testimonial::class);
+    }
 }

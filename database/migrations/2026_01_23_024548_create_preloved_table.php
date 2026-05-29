@@ -23,6 +23,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->unsignedInteger('weight')->nullable();
             $table->unsignedInteger('price_original');
+            $table->unsignedInteger('bottom_price');
             $table->unsignedInteger('stock')->default(0);
             $table->enum('status', [
                 'available',
@@ -36,7 +37,7 @@ return new class extends Migration
         Schema::create('negotiations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('buyer_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->unsignedInteger('offer_price');
             $table->enum('status', [
                 'pending',
@@ -45,8 +46,12 @@ return new class extends Migration
                 'waiting'
             ])->default('pending');
             $table->timestamps();
-
-            $table->unique(['product_id', 'buyer_id']);
+            $table->integer('attempt_count')->default(0);
+            $table->boolean('is_blocked')->default(false);
+            $table->decimal('counter_price', 12, 2)->nullable();
+            $table->text('ai_message')->nullable();
+            $table->decimal('final_price', 12, 2)->nullable();
+            $table->unique(['product_id', 'user_id']);
         });
 
         Schema::create('carts', function (Blueprint $table) {
@@ -60,9 +65,8 @@ return new class extends Migration
 
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('product_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('buyer_id')->constrained('users')->cascadeOnDelete();
-            $table->integer('total')->nullable();   
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->integer('total')->nullable();
             $table->enum('status', [
                 'waiting_payment',
                 'paid',
@@ -79,12 +83,30 @@ return new class extends Migration
             $table->string('postal_code', 10)->nullable();
             $table->string('courier', 5)->nullable();
             $table->string('resi')->nullable();
-            $table->enum('shipping_status',[
-            'dikemas',
-            'dikirim',
-            'selesai'
-            ])->default('dikemas');
+            $table->string('shipping_status')->default('dikemas');
+            $table->json('tracking_history')->nullable();
+            $table->json('last_tracking')->nullable();
+            $table->timestamps();
+        });
+        
+        Schema::create('transaction_items', function (Blueprint $table) {
+
+            $table->id();
+
+            $table->foreignId('transaction_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
+            $table->foreignId('product_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
             $table->integer('qty');
+
+            $table->unsignedInteger('price');
+
+            $table->unsignedInteger('subtotal');
+
             $table->timestamps();
         });
 
@@ -110,6 +132,31 @@ return new class extends Migration
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
             $table->string('image_path');
             $table->boolean('is_primary')->default(false);
+            $table->timestamps();
+        });
+
+        Schema::create('testimonials', function (Blueprint $table) {
+            $table->id();
+
+            $table->foreignId('user_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
+            $table->text('message');
+
+            $table->integer('rating');
+
+            $table->boolean('is_approved')
+                ->default(true);
+
+            $table->timestamps();
+        });
+
+        Schema::create('visitors', function (Blueprint $table) {
+            $table->id();
+            $table->string('ip_address')->nullable();
+            $table->string('user_agent')->nullable();
+            $table->date('visit_date');
             $table->timestamps();
         });
     }

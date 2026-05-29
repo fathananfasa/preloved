@@ -6,56 +6,170 @@ use Illuminate\Http\Request;
 use App\Models\Transaction;
 use Midtrans\Notification;
 use Midtrans\Config;
-use Illuminate\Support\Str;
-
+use Illuminate\Support\Facades\DB;
 
 class MidtransController extends Controller
 {
     public function callback(Request $request)
     {
         Config::$serverKey = config('midtrans.server_key');
-        $notif = new \Midtrans\Notification();
+        Config::$isProduction = false;
 
-        \Log::info('CALLBACK MASUK');
-        \Log::info($request->all());
+        try {
 
-        $transactionStatus = $notif->transaction_status;
-        $orderId = $notif->order_id;
+            \Log::info('CALLBACK MASUK');
+            \Log::info($request->all());
 
-        $id = explode('-', $orderId)[1];
+            $notif = new Notification();
 
-        $transaction = Transaction::find($id);
+            $transactionStatus =
+                $notif->transaction_status;
 
+            $orderId =
+                $notif->order_id;
 
-        if (!$transaction) {
-            return response()->json(['message' => 'Transaction not found'], 404);
-        }
+            $id =
+                explode('-', $orderId)[1];
 
-        // Supaya tidak double update
-        if ($transaction->status === 'paid') {
-            return response()->json(['message' => 'Already processed']);
-        }
+            $transaction =
+                Transaction::with(
+                    'items.product'
+                )->find($id);
 
-        if (in_array($transactionStatus, ['settlement', 'capture'])) {
+            if (!$transaction) {
 
-            $transaction->update([
-                'status' => 'paid'
+                return response()->json([
+                    'message' => 'Transaction not found'
+                ],404);
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Jangan proses dua kali
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                $transaction->status === 'paid'
+            ) {
+
+                return response()->json([
+                    'message' => 'Already processed'
+                ]);
+            }
+
+            DB::beginTransaction();
+
+            /*
+            |--------------------------------------------------------------------------
+            | STATUS MAPPING
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                in_array(
+                    $transactionStatus,
+                    ['settlement','capture']
+                )
+            ) {
+
+                $transaction->update([
+                    'status' => 'paid'
+                ]);
+
+                /*
+                |--------------------------------------------------------------------------
+                | KURANGI STOK
+                |--------------------------------------------------------------------------
+                */
+
+                foreach (
+                    $transaction->items
+                    as $item
+                ) {
+
+                    $product =
+                        $item->product;
+
+                    if (!$product) {
+                        continue;
+                    }
+
+                    $newStock =
+                        max(
+                            $product->stock
+                            - $item->qty,
+                            0
+                        );
+
+                    $product->update([
+
+                        'stock' =>
+                        $newStock,
+
+                        'status' =>
+                        $newStock <= 0
+                        ? 'sold'
+                        : 'available'
+
+                    ]);
+                }
+
+            }
+
+            elseif (
+                $transactionStatus == 'pending'
+            ) {
+
+                $transaction->update([
+                    'status' =>
+                    'waiting_payment'
+                ]);
+
+            }
+
+            elseif (
+                $transactionStatus == 'expire'
+            ) {
+
+                $transaction->update([
+                    'status' =>
+                    'expired'
+                ]);
+
+            }
+
+            elseif (
+                in_array(
+                    $transactionStatus,
+                    ['cancel','deny']
+                )
+            ) {
+
+                $transaction->update([
+                    'status' =>
+                    'failed'
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'OK'
             ]);
 
-            // 🔥 Kurangi stok produk
-            if ($transaction->product_id) {
-                $product = \App\Models\Product::find($transaction->product_id);
+        } catch (\Exception $e) {
 
-                if ($product) {
-                    $product->decrement('stock', 1);
-                }
-            }
-        } elseif ($transactionStatus == 'expire') {
-            $transaction->update(['status' => 'expired']);
-        } elseif ($transactionStatus == 'pending') {
-            $transaction->update(['status' => 'pending']);
+            DB::rollBack();
+
+            \Log::error(
+                $e->getMessage()
+            );
+
+            return response()->json([
+                'message' => 'Error',
+                'error' => $e->getMessage()
+            ],500);
         }
-
-        return response()->json(['message' => 'OK']);
     }
 }

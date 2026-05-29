@@ -17,6 +17,8 @@ class Product extends Model
         'stock',
         'weight',
         'price_original',
+        'bottom_price',
+        'status',
     ];
 
     public function category()
@@ -33,5 +35,11 @@ class Product extends Model
     {
         return $this->hasMany(Negotiation::class);
     }
-}
 
+    public function transactionItems()
+    {
+        return $this->hasMany(
+            TransactionItem::class
+        );
+    }
+}
