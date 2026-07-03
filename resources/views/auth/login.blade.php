@@ -4,18 +4,20 @@
         <!-- LEFT PANEL -->
         <div class="hidden lg:flex items-center justify-center bg-stone-900 text-white px-16">
             <div class="max-w-md">
-                <span class="text-[10px] uppercase tracking-widest text-stone-400 font-medium">Preloved.id</span>
+                <a href="{{ auth()->check() ? route('dashboard') : route('home') }}">
+                    <img src="{{ asset('storage/kebutuhan/logo.png')}}" alt="Bekas Dicintai" class="h-5 w-auto">
+                </a>
                 <h1 class="font-serif text-4xl font-bold leading-tight mt-3">
                     Selamat Datang<br>
                     <span class="italic text-amber-300">Kembali</span>
                 </h1>
                 <p class="mt-4 text-stone-400 text-sm font-light leading-relaxed">
-                    Jual beli barang preloved lebih mudah, aman, dan terpercaya.
+                    Beli barang preloved lebih mudah, aman, dan terpercaya.
                 </p>
                 <div class="mt-8 space-y-3">
                     <div class="flex items-center gap-3 text-sm text-stone-300">
                         <span class="w-6 h-6 rounded-lg bg-amber-400/20 text-amber-400 flex items-center justify-center text-xs">✔</span>
-                        Ribuan produk pilihan
+                        Banyak produk pilihan
                     </div>
                     <div class="flex items-center gap-3 text-sm text-stone-300">
                         <span class="w-6 h-6 rounded-lg bg-amber-400/20 text-amber-400 flex items-center justify-center text-xs">✔</span>
@@ -26,10 +28,6 @@
                         Pembayaran terpercaya
                     </div>
                 </div>
-
-                <div class="mt-12 pt-8 border-t border-stone-800">
-                    <p class="font-serif italic text-amber-300 text-lg">Preloved.id</p>
-                </div>
             </div>
         </div>
 
@@ -38,8 +36,14 @@
             <div class="w-full max-w-md">
 
                 <!-- Logo mobile -->
-                <div class="lg:hidden text-center mb-8">
-                    <p class="font-serif italic text-amber-700 text-2xl font-bold">Preloved<span class="text-stone-900 not-italic">.id</span></p>
+                <!-- Logo mobile -->
+                <div class="lg:hidden flex justify-center mb-8">
+                    <a href="{{ route('home') }}">
+                        <img
+                            src="{{ asset('storage/kebutuhan/hero1.png') }}"
+                            alt="Bekas Dicintai"
+                            class="h-8 w-auto">
+                    </a>
                 </div>
 
                 <div class="bg-white rounded-2xl border border-stone-100 shadow-sm px-6 sm:px-8 pt-7 pb-8">
@@ -85,19 +89,12 @@
                         </div>
 
                         <!-- Remember & Forgot -->
-                        <div class="flex items-center justify-between text-sm">
-                            <label for="remember_me" class="inline-flex items-center gap-2 cursor-pointer">
-                                <input id="remember_me" type="checkbox"
-                                    class="rounded border-stone-300 accent-amber-500"
-                                    name="remember">
-                                <span class="text-xs text-stone-500">Ingat saya</span>
-                            </label>
-
+                        <div class="text-right">
                             @if (Route::has('password.request'))
-                                <a href="{{ route('password.request') }}"
-                                    class="text-xs text-amber-700 hover:text-amber-600 font-medium transition">
-                                    Lupa password?
-                                </a>
+                            <a href="{{ route('password.request') }}"
+                                class="text-xs text-amber-700 hover:text-amber-600 font-medium transition">
+                                Lupa password?
+                            </a>
                             @endif
                         </div>
 

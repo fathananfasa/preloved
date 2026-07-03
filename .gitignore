@@ -22,3 +22,6 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+flask-services.zip
+**/flask-services.zip
+*.zip

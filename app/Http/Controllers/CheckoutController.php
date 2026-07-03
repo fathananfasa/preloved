@@ -296,7 +296,7 @@ class CheckoutController extends Controller
                             $subtotal
                         ]);
 
-                        $cart->delete();
+                        //$cart->delete();
                     }
                 } else {
                     throw new \Exception(

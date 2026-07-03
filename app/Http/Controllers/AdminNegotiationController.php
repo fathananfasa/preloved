@@ -150,7 +150,7 @@ class AdminNegotiationController extends Controller
             ->orderBy('bulan')
             ->get();
 
-        
+
         return view('admin.dashboard', [
 
             // SUMMARY
@@ -203,7 +203,7 @@ class AdminNegotiationController extends Controller
     {
         $negotiations = Negotiation::with(['product', 'user'])
             ->latest()
-            ->get();
+            ->paginate(10);
 
         return view('admin.nego', compact('negotiations'));
     }

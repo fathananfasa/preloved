@@ -2,7 +2,7 @@
 
     <!-- HERO -->
     <section class="relative bg-cover bg-center text-white min-h-[340px] md:min-h-[420px] flex items-center"
-        style="background-image: url('{{ asset('storage/kebutuhan/bg.webp') }}');">
+        style="background-image: url('{{ asset('storage/kebutuhan/bg.png') }}');">
 
         <div class="absolute inset-0 bg-gradient-to-br from-black/80 via-black/60 to-black/75"></div>
 
@@ -10,9 +10,12 @@
             <span class="inline-block text-[10px] sm:text-[11px] font-medium tracking-[0.2em] uppercase text-white/50 border border-white/20 px-3 sm:px-4 py-1.5 rounded-full mb-4 sm:mb-5">
                 Barang Bekas Pilihan
             </span>
-            <h1 class="font-serif text-3xl sm:text-4xl md:text-6xl font-bold text-white mb-3 sm:mb-4 leading-tight">
-                Preloved<span class="italic text-amber-300">.id</span>
-            </h1>
+            <div class="mb-6 flex justify-center">
+    <img
+        src="{{ asset('storage/kebutuhan/logo.png') }}"
+        alt="Bekas Dicintai"
+        class="w-full max-w-[450px] md:max-w-[550px] h-auto">
+</div>
             <p class="text-xs sm:text-sm md:text-base text-white/60 mb-6 sm:mb-8 font-light max-w-sm sm:max-w-none mx-auto">
                 Temukan barang preloved berkualitas dengan harga terbaik.
             </p>
@@ -87,5 +90,4 @@
 
     @include('modals.testimonials')
     @include('partials.testimonials')
-    @include('partials.footer')
 </x-app-layout>

@@ -25,6 +25,7 @@ class TrackingController extends Controller
         }
 
         $transactions = $query
+            ->with('items.product.images') // ← tambah .images
             ->latest()
             ->get();
 

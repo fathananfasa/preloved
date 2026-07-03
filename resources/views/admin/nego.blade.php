@@ -77,6 +77,8 @@
                 </table>
             </div>
         </div>
-
+        <div class="mt-8">
+            {{ $negotiations->links() }}
+        </div>
     </div>
 </x-app-layout>

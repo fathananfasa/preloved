@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Transaction;
+use App\Models\Cart;
 use Midtrans\Notification;
 use Midtrans\Config;
 use Illuminate\Support\Facades\DB;
@@ -22,154 +23,72 @@ class MidtransController extends Controller
 
             $notif = new Notification();
 
-            $transactionStatus =
-                $notif->transaction_status;
+            $transactionStatus = $notif->transaction_status;
+            $orderId = $notif->order_id;
+            $id = explode('-', $orderId)[1];
 
-            $orderId =
-                $notif->order_id;
-
-            $id =
-                explode('-', $orderId)[1];
-
-            $transaction =
-                Transaction::with(
-                    'items.product'
-                )->find($id);
+            $transaction = Transaction::with('items.product')->find($id);
 
             if (!$transaction) {
-
-                return response()->json([
-                    'message' => 'Transaction not found'
-                ],404);
+                return response()->json(['message' => 'Transaction not found'], 404);
             }
 
-            /*
-            |--------------------------------------------------------------------------
-            | Jangan proses dua kali
-            |--------------------------------------------------------------------------
-            */
-
-            if (
-                $transaction->status === 'paid'
-            ) {
-
-                return response()->json([
-                    'message' => 'Already processed'
-                ]);
+            if ($transaction->status === 'paid') {
+                return response()->json(['message' => 'Already processed']);
             }
 
             DB::beginTransaction();
 
-            /*
-            |--------------------------------------------------------------------------
-            | STATUS MAPPING
-            |--------------------------------------------------------------------------
-            */
+            if (in_array($transactionStatus, ['settlement', 'capture'])) {
 
-            if (
-                in_array(
-                    $transactionStatus,
-                    ['settlement','capture']
-                )
-            ) {
+                $transaction->update(['status' => 'paid']);
 
-                $transaction->update([
-                    'status' => 'paid'
-                ]);
+                // Hapus cart setelah payment sukses
+                $productIds = $transaction->items->pluck('product_id');
+                Cart::where('user_id', $transaction->user_id)
+                    ->whereIn('product_id', $productIds)
+                    ->delete();
 
-                /*
-                |--------------------------------------------------------------------------
-                | KURANGI STOK
-                |--------------------------------------------------------------------------
-                */
+                foreach ($transaction->items as $item) {
 
-                foreach (
-                    $transaction->items
-                    as $item
-                ) {
+                    $product = $item->product;
 
-                    $product =
-                        $item->product;
+                    if (!$product) continue;
 
-                    if (!$product) {
-                        continue;
-                    }
-
-                    $newStock =
-                        max(
-                            $product->stock
-                            - $item->qty,
-                            0
-                        );
+                    $newStock = max($product->stock - $item->qty, 0);
 
                     $product->update([
-
-                        'stock' =>
-                        $newStock,
-
-                        'status' =>
-                        $newStock <= 0
-                        ? 'sold'
-                        : 'available'
-
+                        'stock'  => $newStock,
+                        'status' => $newStock <= 0 ? 'sold' : 'available'
                     ]);
                 }
 
-            }
+            } elseif ($transactionStatus == 'pending') {
 
-            elseif (
-                $transactionStatus == 'pending'
-            ) {
+                $transaction->update(['status' => 'waiting_payment']);
 
-                $transaction->update([
-                    'status' =>
-                    'waiting_payment'
-                ]);
+            } elseif ($transactionStatus == 'expire') {
 
-            }
+                $transaction->update(['status' => 'expired']);
 
-            elseif (
-                $transactionStatus == 'expire'
-            ) {
+            } elseif (in_array($transactionStatus, ['cancel', 'deny'])) {
 
-                $transaction->update([
-                    'status' =>
-                    'expired'
-                ]);
-
-            }
-
-            elseif (
-                in_array(
-                    $transactionStatus,
-                    ['cancel','deny']
-                )
-            ) {
-
-                $transaction->update([
-                    'status' =>
-                    'failed'
-                ]);
+                $transaction->update(['status' => 'failed']);
             }
 
             DB::commit();
 
-            return response()->json([
-                'message' => 'OK'
-            ]);
+            return response()->json(['message' => 'OK']);
 
         } catch (\Exception $e) {
 
             DB::rollBack();
-
-            \Log::error(
-                $e->getMessage()
-            );
+            \Log::error($e->getMessage());
 
             return response()->json([
                 'message' => 'Error',
-                'error' => $e->getMessage()
-            ],500);
+                'error'   => $e->getMessage()
+            ], 500);
         }
     }
 }

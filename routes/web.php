@@ -30,6 +30,9 @@ Route::get('/dashboard', function () {
     return redirect()->route('buyer.home');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+Route::get('/search', [BuyerController::class, 'index'])
+    ->name('search');
+
 
 // ==================== ADMIN ROUTES ====================
 Route::middleware(['auth', 'role:admin'])
@@ -80,7 +83,7 @@ Route::middleware(['auth', 'role:admin'])
 
         Route::get('/pengguna', [PenggunaController::class, 'index'])->name('pengguna');
         Route::delete('/pengguna/{id}', [PenggunaController::class, 'destroy'])
-    ->name('pengguna.delete');
+            ->name('pengguna.delete');
     });
 
 
@@ -92,9 +95,6 @@ Route::middleware(['auth', 'role:buyer'])
 
         Route::get('/home', [ProductController::class, 'index'])
             ->name('home');
-
-        Route::get('/search', [BuyerController::class, 'index'])
-            ->name('search');
 
         Route::resource('addresses', AddressController::class)
             ->names('addresses');

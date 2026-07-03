@@ -41,10 +41,10 @@
                     {{-- Price & Stock --}}
                     <div class="flex items-end justify-between gap-4 flex-wrap">
                         <div>
+                            <p class="text-xl text-stone-400 mt-0.5 tracking-wide">Harga</p>
                             <p class="font-serif text-2xl sm:text-3xl font-bold text-amber-700">
                                 Rp {{ number_format($product->price_original, 0, ',', '.') }}
                             </p>
-                            <p class="text-xs text-stone-400 mt-0.5 tracking-wide">Harga asli</p>
                         </div>
                         <span class="inline-flex items-center px-3 py-1.5 rounded-full text-[11px] font-semibold tracking-wide uppercase
                             {{ $product->stock > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-500' }}">
@@ -74,6 +74,16 @@
                             Tambah ke Keranjang
                         </button>
                     </form>
+
+                    <div class="flex items-center my-2">
+                        <div class="flex-1 border-t border-stone-200"></div>
+
+                        <span class="px-3 text-xs text-stone-400">
+                            ATAU
+                        </span>
+
+                        <div class="flex-1 border-t border-stone-200"></div>
+                    </div>
 
                     {{-- NEGOTIATION --}}
                     <div class="bg-stone-50 border border-stone-200 rounded-2xl p-5">
@@ -111,17 +121,20 @@
 
                         @if ($myNegotiation->status === 'pending')
 
-                        <form action="{{ route('buyer.negotiations.update', $myNegotiation->id) }}" method="POST" class="flex flex-col gap-3">
-                            @csrf
+                        <form
+    id="updateNegoForm"
+    action="{{ route('buyer.negotiations.update', $myNegotiation->id) }}"
+    method="POST"
+    class="flex flex-col gap-3">    @csrf
                             @method('PUT')
                             <input
                                 type="number"
                                 name="offer_price"
-                                value="{{ $myNegotiation->offer_price }}"
+                                value="{{ $myNegotiation->final_price }}"
                                 required min="1"
                                 class="px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 text-stone-800 placeholder:text-stone-400">
                             <button type="submit"
-                                class="bg-stone-900 hover:bg-stone-700 text-white py-2.5 rounded-xl font-semibold text-sm transition shadow hover:shadow-md">
+                                class="bg-amber-400 hover:bg-amber-300 text-stone-900 py-2.5 rounded-xl font-semibold text-sm transition shadow hover:shadow-md">
                                 Ubah Tawaran
                             </button>
                         </form>
@@ -171,5 +184,4 @@
     </div>
 
     @include('modals.nego')
-
 </x-app-layout>

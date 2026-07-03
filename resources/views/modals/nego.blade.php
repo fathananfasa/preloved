@@ -29,8 +29,9 @@
 <script>
     let latestResult = null;
 
-    document.getElementById('negoForm')
-        .addEventListener('submit', async function(e) {
+    const negoForm = document.getElementById('negoForm');
+    if (negoForm) {
+        negoForm.addEventListener('submit', async function(e) {
 
             e.preventDefault();
 
@@ -55,6 +56,15 @@
                 return;
             }
 
+            if (result.accepted) {
+
+                alert(result.data.message);
+
+                location.reload();
+
+                return;
+            }
+
             latestResult = result;
 
             document
@@ -73,41 +83,12 @@
                 Number(result.data.counter_price || 0)
                 .toLocaleString('id-ID');
         });
+    }
 
 
     // =========================
     // BUTTON OKE
     // =========================
-    document
-        .getElementById('acceptBtn')
-        .addEventListener('click', async function() {
-
-            let negotiationId =
-                latestResult.negotiation_id;
-
-            let response = await fetch(
-                '/buyer/negotiations/' +
-                negotiationId +
-                '/accept-ai', {
-                    method: 'POST',
-
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-
-                        'Accept': 'application/json'
-                    }
-                }
-            );
-
-            let result = await response.json();
-
-            if (result.success) {
-
-                alert('Negosiasi berhasil disetujui');
-
-                location.reload();
-            }
-        });
 
     // =========================
     // BUTTON TOLAK
@@ -116,18 +97,112 @@
         .getElementById('rejectBtn')
         .addEventListener('click', function() {
 
-            let hargaBaru = prompt(
-                'Masukkan tawaran terbaru kamu'
-            );
+            document
+                .getElementById('negoModal')
+                .classList.add('hidden');
 
-            if (!hargaBaru) return;
+            document
+                .getElementById('negoModal')
+                .classList.remove('flex');
 
-            document.querySelector(
-                'input[name="offer_price"]'
-            ).value = hargaBaru;
+        });
+
+    const updateForm = document.getElementById('updateNegoForm');
+
+    if (updateForm) {
+
+        updateForm.addEventListener('submit', async function(e) {
+
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            formData.append('_method', 'PUT');
+            const response = await fetch(this.action, {
+
+                method: 'POST',
+
+                body: formData,
+
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+
+            });
+
+            const result = await response.json();
+
+            if (result.blocked) {
+
+                alert(result.message);
+
+                return;
+
+            }
+
+            if (result.accepted) {
+
+                alert(result.data.message);
+
+                location.reload();
+
+                return;
+
+            }
+            latestResult = result;
+            document
+                .getElementById('negoModal')
+                .classList.remove('hidden');
+
+            document
+                .getElementById('negoModal')
+                .classList.add('flex');
+
+            document
+                .getElementById('aiMessage')
+                .innerHTML =
+                result.data.message +
+                '<br><br><b>Counter Price:</b> Rp ' +
+                Number(result.data.counter_price)
+                .toLocaleString('id-ID');
+
+        });
+
+    }
+
+    document
+    .getElementById('acceptBtn')
+    .addEventListener('click', async function () {
+
+        const response = await fetch(
+            '/buyer/negotiations/' +
+            latestResult.negotiation_id +
+            '/accept-ai',
+            {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            }
+        );
+
+        const result = await response.json();
+
+        if (result.success) {
 
             document
                 .getElementById('negoModal')
                 .classList.add('hidden');
-        });
+
+            document
+                .getElementById('negoModal')
+                .classList.remove('flex');
+
+            alert("Counter AI berhasil diterima.");
+
+            location.reload();
+        }
+
+    });
 </script>

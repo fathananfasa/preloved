@@ -1,15 +1,5 @@
 <form
-    action="
-    @guest
-        {{ route('home') }}
-    @else
-        @if(auth()->user()->role === 'buyer')
-            {{ route('buyer.search') }}
-        @else
-            {{ route('admin.products.index') }}
-        @endif
-    @endguest
-    "
+    action="{{ route('search') }}"
     method="GET"
     class="w-full"
 >

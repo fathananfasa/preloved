@@ -4,11 +4,9 @@
         <!-- LEFT PANEL -->
         <div class="hidden lg:flex items-center justify-center bg-stone-900 text-white px-16">
             <div class="max-w-md">
-
-                <span class="text-[10px] uppercase tracking-widest text-stone-400 font-medium">
-                    Preloved.id
-                </span>
-
+                   <a href="{{ auth()->check() ? route('dashboard') : route('home') }}">
+                    <img src="{{ asset('storage/kebutuhan/logo.png')}}" alt="Bekas Dicintai" class="h-5 w-auto">
+                </a>
                 <h1 class="font-serif text-4xl font-bold leading-tight mt-3">
                     Bergabung<br>
                     <span class="italic text-amber-300">Sekarang</span>
@@ -24,7 +22,7 @@
                         <span class="w-6 h-6 rounded-lg bg-amber-400/20 text-amber-400 flex items-center justify-center text-xs">
                             ✔
                         </span>
-                        Ribuan produk pilihan
+                        Banyak produk pilihan
                     </div>
 
                     <div class="flex items-center gap-3 text-sm text-stone-300">
@@ -43,11 +41,6 @@
 
                 </div>
 
-                <div class="mt-12 pt-8 border-t border-stone-800">
-                    <p class="font-serif italic text-amber-300 text-lg">
-                        Preloved.id
-                    </p>
-                </div>
 
             </div>
         </div>
@@ -59,10 +52,13 @@
             <div class="w-full max-w-md">
 
                 <!-- Logo Mobile -->
-                <div class="lg:hidden text-center mb-8">
-                    <p class="font-serif italic text-amber-700 text-2xl font-bold">
-                        Preloved<span class="text-stone-900 not-italic">.id</span>
-                    </p>
+                <div class="lg:hidden flex justify-center mb-8">
+                    <a href="{{ route('home') }}">
+                        <img
+                            src="{{ asset('storage/kebutuhan/hero1.png') }}"
+                            alt="Bekas Dicintai"
+                            class="h-8 w-auto">
+                    </a>
                 </div>
 
 

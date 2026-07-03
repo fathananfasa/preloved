@@ -69,7 +69,26 @@ class NegotiationController extends Controller
                 'message' => 'Negosiasi diblokir karena terlalu banyak menawar di bawah harga minimum'
             ]);
         }
+        if ($offer >= $minimum) {
 
+            $negotiation->offer_price = $offer;
+            $negotiation->counter_price = null;
+            $negotiation->final_price = $offer;
+            $negotiation->ai_message = null;
+            $negotiation->status = 'pending';
+
+            $negotiation->save();
+
+            return response()->json([
+                'success' => true,
+                'accepted' => true,
+                'negotiation_id' => $negotiation->id,
+                'data' => [
+                    'message' => 'Penawaran berhasil dikirim ke penjual.',
+                    'counter_price' => $offer,
+                ]
+            ]);
+        }
         // =========================
         // AI NEGOTIATION
         // =========================
@@ -117,6 +136,8 @@ class NegotiationController extends Controller
 
         $negotiation->ai_message =
             $response['message'] ?? null;
+
+        $negotiation->status = null;
 
         $negotiation->save();
 
@@ -198,6 +219,27 @@ class NegotiationController extends Controller
             ]);
         }
 
+        if ($offer >= $minimum) {
+
+            $negotiation->offer_price = $offer;
+            $negotiation->final_price = $offer;
+            $negotiation->counter_price = null;
+            $negotiation->ai_message = null;
+            $negotiation->status = 'pending';
+
+            $negotiation->save();
+
+            return response()->json([
+                'success' => true,
+                'accepted' => true,
+                'negotiation_id' => $negotiation->id,
+                'data' => [
+                    'message' => 'Penawaran berhasil dikirim ke penjual.',
+                    'counter_price' => $offer,
+                ],
+                'attempt_count' => $negotiation->attempt_count,
+            ]);
+        }
         // =========================
         // AI RESPONSE
         // =========================
@@ -209,7 +251,16 @@ class NegotiationController extends Controller
             Tawaran terbaru pembeli: {$offer}
         ");
 
-        $response = json_decode((string) $response, true);
+        $responseText = (string) $response;
+
+        $responseText = str_replace([
+            '```json',
+            '```'
+        ], '', $responseText);
+
+        $responseText = trim($responseText);
+
+        $response = json_decode($responseText, true);
 
         // fallback
         if (!$response) {
@@ -238,11 +289,8 @@ class NegotiationController extends Controller
 
         return response()->json([
             'success' => true,
-
+             'negotiation_id' => $negotiation->id,
             'data' => [
-                'status' =>
-                $response['status'] ?? 'counter',
-
                 'message' =>
                 $response['message'] ?? null,
 
@@ -263,7 +311,8 @@ class NegotiationController extends Controller
         );
 
         $negotiation->update([
-            'final_price' => $negotiation->counter_price
+            'final_price' => $negotiation->counter_price,
+            'status' => 'pending',
         ]);
 
         return response()->json([

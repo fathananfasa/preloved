@@ -13,13 +13,13 @@ return new class extends Migration
     {
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 100);
+            $table->string('name', 15);
             $table->timestamps();
         });
 
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 150);
+            $table->string('name', 100);
             $table->text('description')->nullable();
             $table->unsignedInteger('weight')->nullable();
             $table->unsignedInteger('price_original');
@@ -27,7 +27,6 @@ return new class extends Migration
             $table->unsignedInteger('stock')->default(0);
             $table->enum('status', [
                 'available',
-                'waiting_payment',
                 'sold'
             ])->default('available');
             $table->foreignId('category_id')->constrained()->cascadeOnDelete();
@@ -42,11 +41,10 @@ return new class extends Migration
             $table->enum('status', [
                 'pending',
                 'accepted',
-                'rejected',
-                'waiting'
+                'rejected'
             ])->default('pending');
             $table->timestamps();
-            $table->integer('attempt_count')->default(0);
+            $table->unsignedTinyInteger('attempt_count')->default(0);
             $table->boolean('is_blocked')->default(false);
             $table->decimal('counter_price', 12, 2)->nullable();
             $table->text('ai_message')->nullable();
@@ -58,15 +56,14 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
-            $table->integer('quantity')->default(1);
+            $table->unsignedTinyInteger('quantity')->default(1);
             $table->timestamps();
         });
-
 
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->integer('total')->nullable();
+            $table->unsignedInteger('total')->nullable();
             $table->enum('status', [
                 'waiting_payment',
                 'paid',
@@ -77,18 +74,18 @@ return new class extends Migration
             $table->string('receiver_name', 100)->nullable();
             $table->string('phone', 20)->nullable();
             $table->text('shipping_address')->nullable();
-            $table->string('c_name')->nullable();
-            $table->string('p_name')->nullable();
-            $table->string('k_name')->nullable();
+            $table->string('c_name', 100)->nullable();
+            $table->string('p_name', 100)->nullable();
+            $table->string('k_name', 100)->nullable();
             $table->string('postal_code', 10)->nullable();
             $table->string('courier', 5)->nullable();
-            $table->string('resi')->nullable();
+            $table->string('resi', 50)->nullable();
             $table->string('shipping_status')->default('dikemas');
             $table->json('tracking_history')->nullable();
             $table->json('last_tracking')->nullable();
             $table->timestamps();
         });
-        
+
         Schema::create('transaction_items', function (Blueprint $table) {
 
             $table->id();
@@ -101,7 +98,7 @@ return new class extends Migration
                 ->constrained()
                 ->cascadeOnDelete();
 
-            $table->integer('qty');
+            $table->unsignedTinyInteger('qty');
 
             $table->unsignedInteger('price');
 
@@ -117,11 +114,11 @@ return new class extends Migration
             $table->string('phone', 20);
             $table->text('address');
             $table->unsignedInteger('city');
-            $table->string('c_name')->nullable();
+            $table->string('c_name', 100)->nullable();
             $table->unsignedInteger('province');
-            $table->string('p_name')->nullable();
+            $table->string('p_name', 100)->nullable();
             $table->unsignedInteger('kecamatan');
-            $table->string('k_name');
+            $table->string('k_name', 100);
             $table->string('postal_code', 10);
             $table->boolean('is_default')->default(false);
             $table->timestamps();
@@ -144,7 +141,7 @@ return new class extends Migration
 
             $table->text('message');
 
-            $table->integer('rating');
+            $table->unsignedTinyInteger('rating');
 
             $table->boolean('is_approved')
                 ->default(true);
@@ -166,10 +163,14 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('visitors');
+        Schema::dropIfExists('testimonials');
         Schema::dropIfExists('product_images');
-        Schema::dropIfExists('transactions');
-        Schema::dropIfExists('negotiations');
         Schema::dropIfExists('addresses');
+        Schema::dropIfExists('transaction_items');
+        Schema::dropIfExists('transactions');
+        Schema::dropIfExists('carts');
+        Schema::dropIfExists('negotiations');
         Schema::dropIfExists('products');
         Schema::dropIfExists('categories');
     }

@@ -9,6 +9,8 @@ use App\Models\Transaction;
 use App\Models\Testimonial;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
@@ -51,7 +53,11 @@ class ProductController extends Controller
 
         $products = $query
             ->latest()
-            ->paginate(8)
+            ->paginate(
+                auth()->check() && auth()->user()->role === 'admin'
+                    ? 10
+                    : 4
+            )
             ->withQueryString();
 
         $categories = Category::orderBy(
@@ -155,7 +161,6 @@ class ProductController extends Controller
             ]);
 
             $categoryId = $category->id;
-
         } else {
 
             $categoryId = $request->category_id;
@@ -189,7 +194,17 @@ class ProductController extends Controller
                 ]);
             }
         }
+        try {
 
+            Http::timeout(10)
+                ->post('http://127.0.0.1:5000/reload');
+        } catch (\Exception $e) {
+
+            Log::error(
+                'Gagal reload CBF: ' .
+                    $e->getMessage()
+            );
+        }
         return redirect()
             ->route(
                 'admin.products.index'
@@ -250,6 +265,17 @@ class ProductController extends Controller
         $product->update(
             $validated
         );
+        try {
+
+            Http::timeout(10)
+                ->post('http://127.0.0.1:5000/reload');
+        } catch (\Exception $e) {
+
+            Log::error(
+                'Gagal reload CBF: ' .
+                    $e->getMessage()
+            );
+        }
 
         return redirect()
             ->route(
@@ -280,7 +306,17 @@ class ProductController extends Controller
         }
 
         $product->delete();
+        try {
 
+            Http::timeout(10)
+                ->post('http://127.0.0.1:5000/reload');
+        } catch (\Exception $e) {
+
+            Log::error(
+                'Gagal reload CBF: ' .
+                    $e->getMessage()
+            );
+        }
         return back();
     }
 

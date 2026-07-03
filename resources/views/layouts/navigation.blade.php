@@ -6,7 +6,7 @@
 
             <!-- LOGO -->
             <a href="{{ auth()->check() ? route('dashboard') : route('home') }}">
-                <span class="font-serif italic text-xl text-amber-700 tracking-tight">Preloved<span class="text-stone-900 not-italic font-bold">.id</span></span>
+                <img src="{{ asset('storage/kebutuhan/logo1.png')}}" alt="Bekas Dicintai" class="h-10 w-auto">
             </a>
 
             <!-- TENGAH -->
@@ -26,7 +26,7 @@
                         Dashboard
                     </x-nav-link>
                     <x-nav-link :href="route('admin.products.index')" :active="request()->routeIs('admin.products.*')">
-                        Products
+                        Produk
                     </x-nav-link>
                     <x-nav-link :href="route('admin.negotiations.index')" :active="request()->routeIs('admin.negotiations.*')">
                         Negosiasi
@@ -86,8 +86,8 @@
                     </button>
 
                     <div id="notifDropdown"
-    class="hidden absolute right-0 mt-2 w-72 bg-white border border-stone-100 shadow-xl rounded-2xl z-50 overflow-y-auto max-h-96">
-    @forelse(auth()->user()->notifications->take(5) as $notification)
+                        class="hidden absolute right-0 mt-2 w-72 bg-white border border-stone-100 shadow-xl rounded-2xl z-50 overflow-y-auto max-h-96">
+                        @forelse(auth()->user()->notifications->take(5) as $notification)
                         <a href="{{ route('buyer.notification.redirect', $notification->id) }}"
                             class="block px-4 py-3 text-sm text-stone-700 hover:bg-amber-50 border-b border-stone-50 last:border-0 transition
                                 {{ $notification->read_at ? '' : 'bg-stone-50 font-semibold' }}">
@@ -167,8 +167,8 @@
                     </button>
 
                     <div id="notifDropdownMobile"
-    class="hidden absolute right-0 mt-2 w-72 bg-white border border-stone-100 shadow-xl rounded-2xl z-50 overflow-y-auto max-h-96">
-    @forelse(auth()->user()->notifications->take(5) as $notification)
+                        class="hidden absolute right-0 mt-2 w-72 bg-white border border-stone-100 shadow-xl rounded-2xl z-50 overflow-y-auto max-h-96">
+                        @forelse(auth()->user()->notifications->take(5) as $notification)
                         <a href="{{ route('buyer.notification.redirect', $notification->id) }}"
                             class="block px-4 py-3 text-sm text-stone-700 hover:bg-amber-50 border-b border-stone-50 last:border-0
                                 {{ $notification->read_at ? '' : 'bg-stone-50 font-semibold' }}">
@@ -216,36 +216,36 @@
 
             @auth
             @if(auth()->user()->role === 'admin')
-<x-responsive-nav-link
-    :href="route('admin.dashboard')"
-    :active="request()->routeIs('admin.dashboard')">
-    Dashboard
-</x-responsive-nav-link>
+            <x-responsive-nav-link
+                :href="route('admin.dashboard')"
+                :active="request()->routeIs('admin.dashboard')">
+                Dashboard
+            </x-responsive-nav-link>
 
-<x-responsive-nav-link
-    :href="route('admin.products.index')"
-    :active="request()->routeIs('admin.products.*')">
-    Products
-</x-responsive-nav-link>
+            <x-responsive-nav-link
+                :href="route('admin.products.index')"
+                :active="request()->routeIs('admin.products.*')">
+                Produk
+            </x-responsive-nav-link>
 
-<x-responsive-nav-link
-    :href="route('admin.negotiations.index')"
-    :active="request()->routeIs('admin.negotiations.*')">
-    Negosiasi
-</x-responsive-nav-link>
+            <x-responsive-nav-link
+                :href="route('admin.negotiations.index')"
+                :active="request()->routeIs('admin.negotiations.*')">
+                Negosiasi
+            </x-responsive-nav-link>
 
-<x-responsive-nav-link
-    :href="route('admin.order')"
-    :active="request()->routeIs('admin.order')">
-    Orderan
-</x-responsive-nav-link>
+            <x-responsive-nav-link
+                :href="route('admin.order')"
+                :active="request()->routeIs('admin.order')">
+                Orderan
+            </x-responsive-nav-link>
 
-<x-responsive-nav-link
-    :href="route('admin.pengguna')"
-    :active="request()->routeIs('admin.pengguna')">
-    Pengguna
-</x-responsive-nav-link>
-@endif
+            <x-responsive-nav-link
+                :href="route('admin.pengguna')"
+                :active="request()->routeIs('admin.pengguna')">
+                Pengguna
+            </x-responsive-nav-link>
+            @endif
 
             <div class="border-t border-stone-100 pt-2 mt-2 space-y-1">
                 <x-responsive-nav-link :href="route('profile.edit')">Profile</x-responsive-nav-link>
@@ -279,3 +279,15 @@
     </div>
 </nav>
 @include('partials.nav')
+
+<script>
+    // Desktop notif toggle
+    document.getElementById('notifButton')?.addEventListener('click', function() {
+        document.getElementById('notifDropdown').classList.toggle('hidden');
+    });
+
+    // Mobile notif toggle
+    document.getElementById('notifButtonMobile')?.addEventListener('click', function() {
+        document.getElementById('notifDropdownMobile').classList.toggle('hidden');
+    });
+</script>

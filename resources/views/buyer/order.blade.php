@@ -25,23 +25,24 @@
             <div class="flex flex-col gap-4">
 
                 @foreach ($transactions as $trx)
+                @foreach ($trx->items as $item)
+                
                 <div class="w-full flex gap-4 p-4 border border-gray-100 rounded-lg hover:bg-gray-50 transition">
 
                     {{-- GAMBAR --}}
-                    <img src="{{ $trx->product->image }}"
+                    <img src="{{ asset('storage/' . $item->product->images->first()?->image_path) }}"
                         class="w-24 h-24 object-cover rounded-lg">
 
                     {{-- INFO --}}
                     <div class="flex-1">
-
-                        {{-- BARIS ATAS --}}
                         <div class="flex justify-between items-start">
-
                             <div>
                                 <h2 class="font-semibold text-gray-800">
-                                    {{ $trx->product->name }}
+                                    {{ $item->product->name }}
                                 </h2>
-
+                                <p class="text-sm text-gray-500">
+                                    {{ $item->qty }} x Rp {{ number_format($item->price, 0, ',', '.') }}
+                                </p>
                                 <p class="text-sm text-gray-600">
                                     Total: Rp {{ number_format($trx->total, 0, ',', '.') }}
                                 </p>
@@ -49,38 +50,29 @@
 
                             {{-- STATUS --}}
                             <span class="px-3 py-1 rounded-full text-xs font-medium
-                                {{ $trx->shipping_status == 'dikemas' ? 'bg-yellow-100 text-yellow-700' : '' }}
-                                {{ $trx->shipping_status == 'dikirim' ? 'bg-blue-100 text-blue-700' : '' }}
-                                {{ $trx->shipping_status == 'selesai' ? 'bg-green-100 text-green-700' : '' }}">
+                        {{ $trx->shipping_status == 'dikemas' ? 'bg-yellow-100 text-yellow-700' : '' }}
+                        {{ $trx->shipping_status == 'dikirim' ? 'bg-blue-100 text-blue-700' : '' }}
+                        {{ $trx->shipping_status == 'selesai' ? 'bg-green-100 text-green-700' : '' }}">
                                 {{ $trx->shipping_status }}
                             </span>
                         </div>
 
-                        {{-- BARIS BAWAH --}}
                         <div class="mt-2 text-xs text-gray-500">
                             Resi: {{ $trx->resi ?? '-' }}
                         </div>
 
-                        {{-- TRACKING --}}
-                        {{-- TRACKING --}}
                         @if(isset($trx->tracking_data['last_history']))
                         <div class="mt-2 text-xs text-gray-600">
-                            <strong>
-                                {{ $trx->tracking_data['last_history']['date'] }}
-                            </strong>
-                            <br>
-
+                            <strong>{{ $trx->tracking_data['last_history']['date'] }}</strong><br>
                             {{ $trx->tracking_data['last_history']['desc'] }}
                         </div>
                         @else
-                        <p class="mt-2 text-xs text-gray-400">
-                            Tidak ada data tracking
-                        </p>
+                        <p class="mt-2 text-xs text-gray-400">Tidak ada data tracking</p>
                         @endif
-
                     </div>
 
                 </div>
+                @endforeach
                 @endforeach
 
             </div>

@@ -8,7 +8,7 @@
         <span class="hidden sm:block text-[10px] sm:text-[11px] uppercase tracking-widest text-stone-400 font-medium">Ulasan</span>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+    <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
 
         @forelse($testimonials as $testimonial)
 

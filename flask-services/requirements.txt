@@ -1,0 +1,6 @@
+Flask
+pandas
+SQLAlchemy
+scikit-learn
+Sastrawi
+PyMySQL
