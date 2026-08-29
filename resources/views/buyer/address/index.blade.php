@@ -40,10 +40,12 @@
                     </div>
 
                     <div class="flex flex-col sm:flex-row items-end sm:items-center gap-2 shrink-0">
-                        <a href="{{ route('buyer.addresses.edit', $address) }}"
+                        <button
+                            type="button"
+                            onclick='openEditModal(@json($address))'
                             class="text-xs font-semibold text-stone-600 hover:text-amber-700 border border-stone-200 hover:border-amber-400 px-3 py-1.5 rounded-xl transition duration-200">
                             Edit
-                        </a>
+                        </button>
                         <form method="POST" action="{{ route('buyer.addresses.destroy', $address) }}">
                             @csrf
                             @method('DELETE')

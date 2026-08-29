@@ -25,9 +25,9 @@ class AddressController extends Controller
             'phone' => 'required',
             'address' => 'required',
             'city' => 'required',
-            'c_name'=> 'required|string',
+            'c_name' => 'required|string',
             'province' => 'required',
-            'p_name' =>'required|string',
+            'p_name' => 'required|string',
             'kecamatan' => 'required',
             'k_name' => 'required|string',
             'postal_code' => 'required',
@@ -48,11 +48,6 @@ class AddressController extends Controller
             ->with('success', 'Alamat berhasil ditambahkan');
     }
 
-    public function edit(Address $address)
-    {
-        abort_if($address->user_id !== auth()->id(), 403);
-        return view('buyer.address.edit', compact('address'));
-    }
 
     public function update(Request $request, Address $address)
     {
@@ -63,8 +58,11 @@ class AddressController extends Controller
             'phone' => 'required',
             'address' => 'required',
             'city' => 'required',
+            'c_name' => 'required|string',
             'province' => 'required',
+            'p_name' => 'required|string',
             'kecamatan' => 'required',
+            'k_name' => 'required|string',
             'postal_code' => 'required',
             'is_default' => 'nullable',
         ]);
@@ -73,6 +71,7 @@ class AddressController extends Controller
 
         if ($data['is_default']) {
             Address::where('user_id', auth()->id())
+                ->where('id', '!=', $address->id)
                 ->update(['is_default' => false]);
         }
 

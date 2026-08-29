@@ -23,6 +23,9 @@ Route::get('/', [ProductController::class, 'index'])
 Route::get('/products/{product}', [ProductPublicController::class, 'show'])
     ->name('products.show');
 
+Route::get('/categories/{category}', [ProductPublicController::class, 'category'])
+    ->name('categories.show');
+
 Route::get('/dashboard', function () {
     if (auth()->user()->role === 'admin') {
         return redirect()->route('admin.dashboard');

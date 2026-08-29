@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
 {
@@ -78,15 +79,15 @@ class ProductController extends Controller
 
         if (!auth()->check()) {
 
-            return view(
-                'welcome',
-                compact(
-                    'products',
-                    'categories',
-                    'testimonials'
-                )
-            );
-        }
+    return view(
+        'home',
+        compact(
+            'products',
+            'categories',
+            'testimonials'
+        )
+    );
+}
 
         // ======================
         // ADMIN
@@ -96,11 +97,18 @@ class ProductController extends Controller
             auth()->user()->role === 'admin'
         ) {
 
+            // dipakai modal edit untuk repopulate gambar lama
+            // kalau validasi update gagal & halaman reload
+            $oldEditProduct = old('product_id')
+                ? Product::with('images')->find(old('product_id'))
+                : null;
+
             return view(
                 'admin.products.index',
                 compact(
                     'products',
-                    'categories'
+                    'categories',
+                    'oldEditProduct'
                 )
             );
         }
@@ -120,7 +128,7 @@ class ProductController extends Controller
         )->exists();
 
         return view(
-            'buyer.home',
+            'home',
             compact(
                 'products',
                 'categories',
@@ -143,15 +151,52 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required',
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
             'category_id' => 'required',
             'category_new' => 'nullable|string|max:255',
-            'price_original' => 'required|integer',
+            'price_original' => 'required|integer|min:0',
+            'bottom_price' => 'nullable|integer|min:0|lte:price_original',
             'stock' => 'required|integer|min:0',
-            'description' => 'nullable',
+            'weight' => 'nullable|integer|min:0',
+            'description' => 'nullable|string',
+            'images' => 'nullable|array|max:5',
             'images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
+        ], [
+            'name.required' => 'Nama produk wajib diisi.',
+            'name.max' => 'Nama produk maksimal 255 karakter.',
+
+            'category_id.required' => 'Kategori wajib dipilih.',
+
+            'price_original.required' => 'Harga wajib diisi.',
+            'price_original.integer' => 'Harga harus berupa angka bulat.',
+            'price_original.min' => 'Harga tidak boleh kurang dari 0.',
+
+            'bottom_price.integer' => 'Harga minimal harus berupa angka bulat.',
+            'bottom_price.min' => 'Harga minimal tidak boleh kurang dari 0.',
+            'bottom_price.lte' => 'Harga minimal tidak boleh lebih besar dari harga asli.',
+
+            'stock.required' => 'Stok wajib diisi.',
+            'stock.integer' => 'Stok harus berupa angka bulat.',
+            'stock.min' => 'Stok tidak boleh kurang dari 0.',
+
+            'weight.integer' => 'Berat harus berupa angka bulat.',
+            'weight.min' => 'Berat tidak boleh kurang dari 0.',
+
+            'images.max' => 'Maksimal 5 gambar yang bisa diupload.',
+            'images.*.image' => 'File yang diupload harus berupa gambar.',
+            'images.*.mimes' => 'Gambar harus berformat jpg, jpeg, png, atau webp.',
+            'images.*.max' => 'Ukuran gambar maksimal 2MB.',
         ]);
+
+        if ($validator->fails()) {
+            return back()
+                ->withErrors($validator, 'store')
+                ->withInput()
+                ->with('error', 'Produk gagal ditambahkan, cek isian ya');
+        }
+
+        $validated = $validator->validated();
 
         // kategori baru
         if ($request->category_id === 'new') {
@@ -167,13 +212,13 @@ class ProductController extends Controller
         }
 
         $product = Product::create([
-            'name' => $request->name,
-            'price_original' => $request->price_original,
-            'bottom_price' => $request->bottom_price,
-            'stock' => $request->stock,
-            'weight' => $request->weight,
+            'name' => $validated['name'],
+            'price_original' => $validated['price_original'],
+            'bottom_price' => $validated['bottom_price'] ?? null,
+            'stock' => $validated['stock'],
+            'weight' => $validated['weight'] ?? null,
             'category_id' => $categoryId,
-            'description' => $request->description,
+            'description' => $validated['description'] ?? null,
         ]);
 
         // Upload gambar
@@ -209,10 +254,7 @@ class ProductController extends Controller
             ->route(
                 'admin.products.index'
             )
-            ->with(
-                'success',
-                'Produk berhasil ditambahkan'
-            );
+            ->with('notify', ['message' => 'Produk berhasil ditambahkan', 'type' => 'success']);
     }
 
     public function edit(Product $product)
@@ -233,15 +275,56 @@ class ProductController extends Controller
         Product $product
     ) {
 
-        $validated = $request->validate([
-            'name' => 'required',
-            'description' => 'nullable',
-            'price_original' => 'required|numeric',
-            'bottom_price' => 'required|numeric',
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'price_original' => 'required|integer|min:0',
+            'bottom_price' => 'nullable|integer|min:0|lte:price_original',
+            'stock' => 'required|integer|min:0',
+            'weight' => 'nullable|integer|min:0',
             'status' => 'required|in:available,waiting_payment,sold',
             'category_id' => 'required|exists:categories,id',
+            'images' => 'nullable|array|max:5',
             'images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
+        ], [
+            'name.required' => 'Nama produk wajib diisi.',
+            'name.max' => 'Nama produk maksimal 255 karakter.',
+
+            'price_original.required' => 'Harga wajib diisi.',
+            'price_original.integer' => 'Harga harus berupa angka bulat.',
+            'price_original.min' => 'Harga tidak boleh kurang dari 0.',
+
+            'bottom_price.integer' => 'Harga minimal harus berupa angka bulat.',
+            'bottom_price.min' => 'Harga minimal tidak boleh kurang dari 0.',
+            'bottom_price.lte' => 'Harga minimal tidak boleh lebih besar dari harga asli.',
+
+            'stock.required' => 'Stok wajib diisi.',
+            'stock.integer' => 'Stok harus berupa angka bulat.',
+            'stock.min' => 'Stok tidak boleh kurang dari 0.',
+
+            'weight.integer' => 'Berat harus berupa angka bulat.',
+            'weight.min' => 'Berat tidak boleh kurang dari 0.',
+
+            'status.required' => 'Status wajib dipilih.',
+            'status.in' => 'Status tidak valid.',
+
+            'category_id.required' => 'Kategori wajib dipilih.',
+            'category_id.exists' => 'Kategori tidak ditemukan.',
+
+            'images.max' => 'Maksimal 5 gambar yang bisa diupload.',
+            'images.*.image' => 'File yang diupload harus berupa gambar.',
+            'images.*.mimes' => 'Gambar harus berformat jpg, jpeg, png, atau webp.',
+            'images.*.max' => 'Ukuran gambar maksimal 2MB.',
         ]);
+
+        if ($validator->fails()) {
+            return back()
+                ->withErrors($validator, 'update')
+                ->withInput(array_merge($request->all(), ['product_id' => $product->id]))
+                ->with('error', 'Produk gagal diupdate, cek isian ya');
+        }
+
+        $validated = $validator->validated();
 
         // upload gambar tambahan
         if ($request->hasFile('images')) {
@@ -281,45 +364,36 @@ class ProductController extends Controller
             ->route(
                 'admin.products.index'
             )
-            ->with(
-                'success',
-                'Produk berhasil diupdate'
-            );
+            ->with('notify', [
+        'message' => 'Produk berhasil diupdate',
+        'type' => 'success'
+    ]);
     }
 
-    public function destroy(
-        Product $product
-    ) {
-
-        foreach (
-            $product->images
-            as $image
-        ) {
-
-            Storage::disk(
-                'public'
-            )->delete(
-                $image->image_path
-            );
-
+    public function destroy(Product $product)
+    {
+        foreach ($product->images as $image) {
+            Storage::disk('public')->delete($image->image_path);
             $image->delete();
         }
 
         $product->delete();
+
         try {
+            $response = Http::timeout(30)->post('http://127.0.0.1:5000/reload');
 
-            Http::timeout(10)
-                ->post('http://127.0.0.1:5000/reload');
+            if ($response->successful()) {
+                Log::info('Reload CBF sukses: ' . $response->body());
+            } else {
+                Log::warning('Reload CBF gagal, status: ' . $response->status() . ' - ' . $response->body());
+            }
         } catch (\Exception $e) {
-
-            Log::error(
-                'Gagal reload CBF: ' .
-                    $e->getMessage()
-            );
+            Log::error('Gagal reload CBF: ' . $e->getMessage());
         }
-        return back();
-    }
 
+        return redirect()->route('admin.products.index')
+            ->with('notify', ['message' => 'Produk berhasil dihapus', 'type' => 'danger']);
+    }
     public function storeImage(
         Request $request,
         Product $product
@@ -327,7 +401,12 @@ class ProductController extends Controller
 
         $request->validate([
             'image' =>
-            'required|image|mimes:jpg,jpeg,png|max:2048',
+            'required|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ], [
+            'image.required' => 'Gambar wajib diisi.',
+            'image.image' => 'File yang diupload harus berupa gambar.',
+            'image.mimes' => 'Gambar harus berformat jpg, jpeg, png, atau webp.',
+            'image.max' => 'Ukuran gambar maksimal 2MB.',
         ]);
 
         $path = $request
@@ -374,6 +453,9 @@ class ProductController extends Controller
             'required|string|max:255',
             'description' =>
             'nullable|string'
+        ], [
+            'name.required' => 'Nama kategori wajib diisi.',
+            'name.max' => 'Nama kategori maksimal 255 karakter.',
         ]);
 
         Category::create([

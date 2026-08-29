@@ -53,7 +53,22 @@
             </a>
 
         </form>
-
+        {{-- Toast notifikasi sukses --}}
+        @if (session('notify'))
+        @php
+        $type = session('notify')['type'];
+        $colors = [
+        'success' => 'bg-green-600',
+        'danger' => 'bg-red-600',
+        ];
+        @endphp
+        <div
+            id="successToast"
+            class="flex items-center gap-3 rounded-xl {{ $colors[$type] ?? 'bg-stone-600' }} px-4 py-3 mb-4 text-sm font-semibold text-white shadow-md transition-opacity duration-500 ease-out">
+            <span class="w-2 h-2 rounded-full bg-white"></span>
+            {{ session('notify')['message'] }}
+        </div>
+        @endif
         <!-- Table -->
         <div class="bg-white rounded-2xl border border-stone-100 shadow-sm overflow-hidden">
             <div class="overflow-x-auto">
