@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Database configuration
 # ---------------------------------------------------------------------------
-DB_URL = "mysql+pymysql://xxxx:prelovedin_123@localhost:3306/xxxxx"
+DB_URL = "mysql+pymysql://xxxx:xxxx@localhost:3306/xxxxx"
 # ---------------------------------------------------------------------------
 # Content weighting  (nama_produk : deskripsi : kategori = 3 : 2 : 1)
 # ---------------------------------------------------------------------------
